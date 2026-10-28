@@ -1,0 +1,11 @@
+--- a/main.go
++++ b/main.go
+@@ -419,7 +419,7 @@ func main() {
+ 	// make it the default logger for contexts
+ 	context.SetDefaultLogger(logger)
+ 
+-	if *localDev {
++	if *localDev || os.Getenv("SNAP") != "" {
+ 		run(overseer.State{}, sync)
+ 		os.Exit(0)
+ 	}

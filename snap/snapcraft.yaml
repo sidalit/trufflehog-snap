@@ -1,0 +1,78 @@
+name: trufflehog
+base: core26
+version: '3.99.7'
+title: TruffleHog
+icon: snap/gui/trufflehog.png
+summary: Find and verify leaked credentials in repositories, files and cloud services
+description: |
+  TruffleHog finds API keys, passwords and other secrets in Git history,
+  local files and cloud services. It can verify detected credentials and
+  report results as text, JSON or SARIF.
+
+  Run trufflehog for the interactive terminal interface, or scan a project:
+
+     trufflehog filesystem ~/projects/my-project --no-verification
+     trufflehog git file://$HOME/projects/my-project --no-verification
+
+  Files must be in accessible home directories. For removable storage:
+
+     sudo snap connect trufflehog:removable-media
+
+  Credential verification contacts the corresponding services unless
+  --no-verification is set. Application updates are managed by snapd.
+license: AGPL-3.0-only
+grade: stable
+confinement: strict
+website: https://trufflesecurity.com/trufflehog
+source-code:
+  - https://github.com/trufflesecurity/trufflehog
+  - https://github.com/sidalit/trufflehog-snap
+issues:
+  - https://github.com/trufflesecurity/trufflehog/issues
+  - https://github.com/sidalit/trufflehog-snap/issues
+contact: https://github.com/sidalit/trufflehog-snap/issues
+
+platforms:
+  amd64:
+  arm64:
+
+apps:
+  trufflehog:
+    command: bin/trufflehog
+    plugs:
+      - home
+      - network
+      - network-bind
+      - removable-media
+      - ssh-keys
+    environment:
+      GIT_EXEC_PATH: $SNAP/usr/lib/git-core
+      GIT_TEMPLATE_DIR: $SNAP/usr/share/git-core/templates
+
+parts:
+  trufflehog:
+    plugin: nil
+    source: https://github.com/trufflesecurity/trufflehog.git
+    source-tag: v$SNAPCRAFT_PROJECT_VERSION
+    source-depth: 1
+    build-snaps:
+      - go/1.27/stable
+    build-packages:
+      - patch
+    stage-packages:
+      - git
+      - openssh-client
+    build-environment:
+      - CGO_ENABLED: '0'
+      - GOTOOLCHAIN: local
+    override-pull: |
+      craftctl default
+      cd "$CRAFT_PART_SRC"
+      patch -p1 < "$CRAFT_PROJECT_DIR/snap/patches/0001-use-snap-updates.patch"
+    override-build: |
+      mkdir -p "$CRAFT_PART_INSTALL/bin"
+      go build -p "$CRAFT_PARALLEL_BUILD_COUNT" -trimpath \
+        -ldflags "-s -w -X github.com/trufflesecurity/trufflehog/v3/pkg/version.BuildVersion=$SNAPCRAFT_PROJECT_VERSION" \
+        -o "$CRAFT_PART_INSTALL/bin/trufflehog" .
+      install -Dm644 LICENSE "$CRAFT_PART_INSTALL/share/doc/trufflehog/LICENSE"
+      install -Dm644 docs/man/trufflehog.1 "$CRAFT_PART_INSTALL/share/man/man1/trufflehog.1"
