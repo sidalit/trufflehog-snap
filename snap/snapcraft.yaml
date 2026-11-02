@@ -1,6 +1,6 @@
 name: trufflehog
 base: core26
-version: '3.99.7'
+version: '3.99.8'
 title: TruffleHog
 icon: snap/gui/trufflehog.png
 summary: Find and verify leaked credentials in repositories, files and cloud services
