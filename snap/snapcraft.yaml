@@ -48,6 +48,7 @@ apps:
     environment:
       GIT_EXEC_PATH: $SNAP/usr/lib/git-core
       GIT_TEMPLATE_DIR: $SNAP/usr/share/git-core/templates
+      XDG_CONFIG_HOME: $SNAP_USER_DATA/.config
 
 parts:
   trufflehog:
